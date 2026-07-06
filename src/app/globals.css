@@ -1,0 +1,119 @@
+@import "lenis/dist/lenis.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── Design Tokens ─────────────────────────────────────────── */
+:root {
+  --background: #f8f9fc;
+  --foreground: #0c0d0f;
+  --sidebar-width: 16rem;       /* 256px */
+  --sidebar-collapsed-width: 4.5rem; /* 72px */
+  --bento-radius: 1rem;
+}
+
+.dark {
+  --background: #09090b;
+  --foreground: #fafafa;
+}
+
+/* ─── Base resets ───────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: auto; /* Lenis handles smooth scrolling */
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans, Arial, Helvetica, sans-serif);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ─── Lenis overrides ───────────────────────────────────────── */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+/* Prevent Lenis from hijacking scroll on elements with data-lenis-prevent */
+[data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+/* ─── Custom scrollbar (sidebar) ────────────────────────────── */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: hsl(240 5% 64% / 0.3);
+  border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: hsl(240 5% 64% / 0.5);
+}
+
+/* Dark mode scrollbar */
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: hsl(240 5% 64% / 0.2);
+}
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: hsl(240 5% 64% / 0.35);
+}
+
+/* ─── Selection ─────────────────────────────────────────────── */
+::selection {
+  background: hsl(239 84% 67% / 0.2);
+  color: inherit;
+}/* ─── FOUC Prevention ──────────────────────────────────────── */
+/*
+ * GSAP-animated KPI cards start invisible. GSAP owns the full
+ * transform lifecycle via `fromTo` — no CSS transform is set
+ * here to avoid conflicts with GSAP's transform matrix.
+ */
+[data-kpi-card] {
+  opacity: 0;
+  visibility: hidden;
+  will-change: transform, opacity;
+}
+
+/* ─── Animation keyframes ───────────────────────────────────── */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-subtle {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out forwards;
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}

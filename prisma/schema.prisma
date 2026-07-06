@@ -1,0 +1,205 @@
+// E-comDash - Enterprise E-commerce Analytics Schema
+// Engine: PostgreSQL 15+ | Prisma v7
+
+generator client {
+  provider        = "prisma-client-js"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+  DISCONTINUED
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  PENDING
+  AUTHORIZED
+  PAID
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum CurrencyCode {
+  USD
+  EUR
+  GBP
+  CAD
+  AUD
+  JPY
+  CNY
+  BRL
+}
+
+model User {
+  id           String    @id @default(uuid()) @db.Uuid
+  email        String    @unique @db.VarChar(255)
+  passwordHash String?  @map("password_hash") @db.VarChar(255)
+  firstName    String    @map("first_name") @db.VarChar(100)
+  lastName     String    @map("last_name") @db.VarChar(100)
+  phone        String?   @db.VarChar(30)
+  avatarUrl    String?   @map("avatar_url")
+  isActive     Boolean   @default(true) @map("is_active")
+  lastLoginAt  DateTime? @map("last_login_at") @db.Timestamptz(3)
+  metadata     Json?     @db.JsonB
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  orders Order[]
+
+  @@index([email])
+  @@index([isActive, createdAt])
+  @@index([lastLoginAt])
+  @@index([createdAt], type: Brin)
+  @@index([metadata], type: Gin)
+  @@map("users")
+}
+
+model ProductCategory {
+  id          String           @id @default(uuid()) @db.Uuid
+  name        String           @db.VarChar(200)
+  slug        String           @unique @db.VarChar(250)
+  description String?          @db.Text
+  parentId    String?          @map("parent_id") @db.Uuid
+  sortOrder   Int              @default(0) @map("sort_order")
+  createdAt   DateTime         @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime         @updatedAt @map("updated_at") @db.Timestamptz(3)
+  parent   ProductCategory? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children ProductCategory[] @relation("CategoryHierarchy")
+  products Product[]
+
+  @@index([slug])
+  @@index([parentId])
+  @@index([sortOrder])
+  @@index([name])
+  @@map("product_categories")
+}
+
+model Product {
+  id                String        @id @default(uuid()) @db.Uuid
+  sku               String        @unique @db.VarChar(100)
+  name              String        @db.VarChar(500)
+  description       String?       @db.Text
+  categoryId        String?       @map("category_id") @db.Uuid
+  basePrice         Decimal       @map("base_price") @db.Decimal(12, 2)
+  compareAtPrice    Decimal?      @map("compare_at_price") @db.Decimal(12, 2)
+  costPrice         Decimal?      @map("cost_price") @db.Decimal(12, 2)
+  currency          CurrencyCode  @default(USD) @map("currency")
+  stockLevel        Int           @default(0) @map("stock_level")
+  lowStockThreshold Int           @default(10) @map("low_stock_threshold")
+  isLowStock        Boolean       @default(false) @map("is_low_stock")
+  weightGrams       Decimal?      @map("weight_grams") @db.Decimal(10, 2)
+  widthMm           Decimal?      @map("width_mm") @db.Decimal(10, 2)
+  heightMm          Decimal?      @map("height_mm") @db.Decimal(10, 2)
+  depthMm           Decimal?      @map("depth_mm") @db.Decimal(10, 2)
+  images            Json?         @db.JsonB
+  status            ProductStatus @default(DRAFT)
+  tags              String[]
+  metadata          Json?         @db.JsonB
+  ratingAvg         Decimal?      @map("rating_avg") @db.Decimal(3, 2)
+  reviewCount       Int           @default(0) @map("review_count")
+  createdAt         DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+  category   ProductCategory? @relation(fields: [categoryId], references: [id])
+  orderItems OrderItem[]
+
+  @@index([sku])
+  @@index([status, createdAt])
+  @@index([categoryId, status])
+  @@index([basePrice])
+  @@index([stockLevel])
+  @@index([isLowStock])
+  @@index([ratingAvg])
+  @@index([createdAt], type: Brin)
+  @@index([tags], type: Gin)
+  @@index([metadata], type: Gin)
+  @@index([status, stockLevel, basePrice])
+  @@index([categoryId, status, createdAt])
+  @@index([status, ratingAvg])
+  @@map("products")
+}
+
+model Order {
+  id              String        @id @default(uuid()) @db.Uuid
+  orderNumber     String        @unique @map("order_number") @db.VarChar(50)
+  userId          String        @map("user_id") @db.Uuid
+  status          OrderStatus   @default(PENDING)
+  paymentStatus   PaymentStatus @default(PENDING) @map("payment_status")
+  subtotal        Decimal       @db.Decimal(14, 2)
+  shippingCost    Decimal       @default(0) @map("shipping_cost") @db.Decimal(12, 2)
+  taxAmount       Decimal       @default(0) @map("tax_amount") @db.Decimal(12, 2)
+  discountAmount  Decimal       @default(0) @map("discount_amount") @db.Decimal(12, 2)
+  total           Decimal       @db.Decimal(14, 2)
+  currency        CurrencyCode  @default(USD)
+  country    String?  @db.VarChar(100)
+  city       String?  @db.VarChar(200)
+  lat        Decimal? @db.Decimal(10, 7)
+  lng        Decimal? @db.Decimal(10, 7)
+  postalCode String?  @map("postal_code") @db.VarChar(20)
+  timezone   String?  @db.VarChar(50)
+  shippingAddress Json?   @map("shipping_address") @db.JsonB
+  billingAddress  Json?   @map("billing_address") @db.JsonB
+  notes           String? @db.Text
+  metadata        Json?   @db.JsonB
+  placedAt        DateTime @default(now()) @map("placed_at") @db.Timestamptz(3)
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+  user  User       @relation(fields: [userId], references: [id], onDelete: Restrict)
+  items OrderItem[]
+
+  @@index([orderNumber])
+  @@index([userId, placedAt])
+  @@index([status, placedAt])
+  @@index([paymentStatus, status])
+  @@index([placedAt], type: Brin)
+  @@index([lat, lng])
+  @@index([country, status])
+  @@index([country, placedAt])
+  @@index([currency, status])
+  @@index([city, country])
+  @@index([total])
+  @@index([metadata], type: Gin)
+  @@index([status, paymentStatus, placedAt])
+  @@index([userId, status, placedAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id             String       @id @default(uuid()) @db.Uuid
+  orderId        String       @map("order_id") @db.Uuid
+  productId      String       @map("product_id") @db.Uuid
+  quantity       Int          @default(1)
+  unitPrice      Decimal      @map("unit_price") @db.Decimal(14, 2)
+  localizedPrice Decimal      @map("localized_price") @db.Decimal(14, 2)
+  currency       CurrencyCode @default(USD)
+  taxRate        Decimal      @default(0) @map("tax_rate") @db.Decimal(5, 4)
+  total          Decimal      @map("total") @db.Decimal(14, 2)
+  metadata       Json?        @db.JsonB
+  placedAt       DateTime     @default(now()) @map("placed_at") @db.Timestamptz(3)
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@index([productId, placedAt])
+  @@index([productId, unitPrice])
+  @@index([localizedPrice])
+  @@index([placedAt], type: Brin)
+  @@index([quantity])
+  @@map("order_items")
+}
