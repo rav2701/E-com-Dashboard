@@ -1,4 +1,4 @@
-import { graphql, buildSchema } from "graphql";
+import { graphql } from "graphql";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import { typeDefs } from "@/graphql/schema";
 import { resolvers } from "@/graphql/resolvers";
@@ -23,9 +23,6 @@ function getSchema() {
     return _schema;
   } catch (err) {
     _schemaError = err instanceof Error ? err.message : String(err);
-    if (err instanceof Error && err.stack) {
-      _schemaError += "\n" + err.stack;
-    }
     throw new Error(_schemaError);
   }
 }
@@ -34,6 +31,9 @@ function getSchema() {
 
 async function parseBody(request: Request): Promise<{ query: string; variables?: Record<string, unknown> }> {
   const text = await request.text();
+  if (!text) {
+    throw new Error("Request body is empty. Send a POST request with a JSON body containing 'query'.");
+  }
   try {
     return JSON.parse(text);
   } catch {
@@ -58,14 +58,13 @@ async function handleRequest(request: Request): Promise<Response> {
     });
 
     return new Response(JSON.stringify(result), {
-      status: result.errors ? 200 : 200,
+      status: 200,
       headers: { "content-type": "application/json" },
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    const stack = err instanceof Error ? err.stack : "";
     return new Response(
-      JSON.stringify({ error: "Internal server error", detail: message, stack }),
+      JSON.stringify({ error: message }),
       {
         status: 500,
         headers: { "content-type": "application/json" },
@@ -76,8 +75,14 @@ async function handleRequest(request: Request): Promise<Response> {
 
 // ── Next.js App Router handlers ───────────────────────────────
 
-export async function GET(request: Request) {
-  return handleRequest(request);
+export async function GET() {
+  return new Response(
+    JSON.stringify({ error: "Use POST to send GraphQL queries" }),
+    {
+      status: 405,
+      headers: { "content-type": "application/json", allow: "POST" },
+    }
+  );
 }
 
 export async function POST(request: Request) {
