@@ -11,6 +11,11 @@ datasource db {
   provider = "postgresql"
 }
 
+enum UserRole {
+  USER
+  ADMIN
+}
+
 enum ProductStatus {
   DRAFT
   ACTIVE
@@ -56,6 +61,7 @@ model User {
   lastName     String    @map("last_name") @db.VarChar(100)
   phone        String?   @db.VarChar(30)
   avatarUrl    String?   @map("avatar_url")
+  role         UserRole  @default(USER) @map("role")
   isActive     Boolean   @default(true) @map("is_active")
   lastLoginAt  DateTime? @map("last_login_at") @db.Timestamptz(3)
   metadata     Json?     @db.JsonB
@@ -64,6 +70,7 @@ model User {
   orders Order[]
 
   @@index([email])
+  @@index([role])
   @@index([isActive, createdAt])
   @@index([lastLoginAt])
   @@index([createdAt], type: Brin)

@@ -17,10 +17,11 @@ const JWT_EXPIRES_IN = "7d";
 interface JwtPayload {
   userId: string;
   email: string;
+  role: string;
 }
 
-function signToken(userId: string, email: string): string {
-  return jwt.sign({ userId, email } satisfies JwtPayload, JWT_SECRET, {
+function signToken(userId: string, email: string, role: string): string {
+  return jwt.sign({ userId, email, role } satisfies JwtPayload, JWT_SECRET, {
     expiresIn: JWT_EXPIRES_IN,
   });
 }
@@ -86,7 +87,7 @@ export async function register(
   });
 
   // Sign JWT
-  const token = signToken(user.id, user.email);
+  const token = signToken(user.id, user.email, user.role);
 
   return {
     token,
@@ -96,6 +97,7 @@ export async function register(
       firstName: user.firstName,
       lastName: user.lastName,
       avatarUrl: user.avatarUrl,
+      role: user.role,
       isActive: user.isActive,
       lastLoginAt: user.lastLoginAt?.toISOString() ?? null,
       createdAt: user.createdAt.toISOString(),
@@ -148,7 +150,7 @@ export async function login(
   });
 
   // Sign JWT
-  const token = signToken(user.id, user.email);
+  const token = signToken(user.id, user.email, user.role);
 
   return {
     token,
@@ -158,6 +160,7 @@ export async function login(
       firstName: user.firstName,
       lastName: user.lastName,
       avatarUrl: user.avatarUrl,
+      role: user.role,
       isActive: user.isActive,
       lastLoginAt: user.lastLoginAt?.toISOString() ?? null,
       createdAt: user.createdAt.toISOString(),
@@ -221,6 +224,7 @@ export async function me(
     firstName: user.firstName,
     lastName: user.lastName,
     avatarUrl: user.avatarUrl,
+    role: user.role,
     isActive: user.isActive,
     lastLoginAt: user.lastLoginAt?.toISOString() ?? null,
     createdAt: user.createdAt.toISOString(),

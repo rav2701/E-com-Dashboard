@@ -117,6 +117,16 @@ export const typeDefs = /* GraphQL */ `
   }
 
   """
+  User role for access control.
+  """
+  enum UserRole {
+    "Standard user with basic access."
+    USER
+    "Administrator with full system access."
+    ADMIN
+  }
+
+  """
   Public user profile information.
   """
   type UserProfile {
@@ -130,6 +140,8 @@ export const typeDefs = /* GraphQL */ `
     lastName: String!
     "URL to user's avatar image."
     avatarUrl: String
+    "The user's role (USER or ADMIN)."
+    role: UserRole!
     "Whether the user account is active."
     isActive: Boolean!
     "Timestamp of the user's last login."

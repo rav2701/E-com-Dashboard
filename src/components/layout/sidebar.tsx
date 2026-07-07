@@ -23,6 +23,7 @@ import {
   Sun,
   Moon,
   Sparkles,
+  Shield,
 } from "lucide-react";
 
 const navigationItems = [
@@ -35,6 +36,7 @@ const navigationItems = [
   { label: "AI Chat", href: "/chat", icon: Sparkles },
   { label: "Notifications", href: "/notifications", icon: Bell },
   { label: "Settings", href: "/settings", icon: Settings },
+  { label: "Admin", href: "/admin", icon: Shield },
 ];
 
 const bottomItems = [

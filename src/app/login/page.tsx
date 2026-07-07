@@ -36,6 +36,7 @@ const LOGIN_MUTATION = `
         firstName
         lastName
         avatarUrl
+        role
         isActive
       }
     }
@@ -67,7 +68,7 @@ export default function LoginPage() {
 
     try {
       const response = await graphql<{
-        login: { token: string; user: { id: string; email: string; firstName: string; lastName: string } };
+        login: { token: string; user: { id: string; email: string; firstName: string; lastName: string; role: string } };
       }>(LOGIN_MUTATION, {
         input: {
           email: data.email,
@@ -78,8 +79,13 @@ export default function LoginPage() {
       // Store JWT token
       localStorage.setItem("ecomdash_token", response.data.login.token);
 
-      // Redirect to dashboard
-      router.push("/");
+      // Redirect based on role
+      const role = response.data.login.user.role;
+      if (role === "ADMIN") {
+        router.push("/admin");
+      } else {
+        router.push("/");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "An unexpected error occurred");
     } finally {
