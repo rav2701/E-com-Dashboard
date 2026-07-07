@@ -1,3 +1,11 @@
+/**
+ * @file Static fallback data for the FakeStore API.
+ * Used when the live FakeStore API is unreachable — the
+ * {@link useFakeStoreProducts} hook falls back to this data.
+ * All image URLs point to the real `fakestoreapi.com` CDN.
+ */
+
+/** A product as returned by the FakeStore API. */
 export interface FakeStoreProduct {
   id: number;
   title: string;

@@ -52,15 +52,6 @@ export const typeDefs = /* GraphQL */ `
     """
     getCategoryPerformance: [CategoryPerformance!]!
 
-    """
-    All active products in the catalog with their primary image.
-    """
-    getAllProducts: [ProductCatalogItem!]!
-
-    """
-    All product categories with active product counts.
-    """
-    getAllCategories: [CategoryInfo!]!
   }
 
   """
@@ -298,48 +289,6 @@ export const typeDefs = /* GraphQL */ `
     title: String!
     "Alert description."
     description: String!
-  }
-
-  """
-  A product in the catalog with its details and primary image.
-  """
-  type ProductCatalogItem {
-    "Product unique identifier."
-    id: ID!
-    "Stock keeping unit."
-    sku: String!
-    "Product display name."
-    name: String!
-    "Category name."
-    category: String
-    "Current base price."
-    basePrice: Float!
-    "Original/comparison price before discount (if any)."
-    compareAtPrice: Float
-    "Units remaining in stock."
-    stockLevel: Int!
-    "Average customer rating (0-5 scale)."
-    ratingAvg: Float
-    "Number of customer reviews."
-    reviewCount: Int!
-    "Primary product image URL (extracted from images JSONB)."
-    imageUrl: String
-    "Product status (ACTIVE, DRAFT, ARCHIVED, DISCONTINUED)."
-    status: String!
-    "Product creation timestamp (ISO 8601)."
-    createdAt: String!
-  }
-
-  "A product category with its product count."
-  type CategoryInfo {
-    "Category unique identifier."
-    id: ID!
-    "Category display name."
-    name: String!
-    "URL-friendly slug."
-    slug: String!
-    "Number of active products in this category."
-    productCount: Int!
   }
 
   """

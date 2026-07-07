@@ -1,8 +1,15 @@
 "use client";
 
+/**
+ * @file Fetches and normalizes product data from the FakeStore and DummyJSON APIs.
+ * Combines both sources into a unified {@link FakeStoreCard} format, with automatic
+ * fallback to static data when either API is unreachable.
+ */
+
 import { useState, useEffect, useCallback } from "react";
 import { FAKESTORE_PRODUCTS, type FakeStoreProduct } from "@/lib/fakestore-data";
 
+/** A normalized product card from either the FakeStore or DummyJSON API. */
 export interface FakeStoreCard {
   id: string;
   name: string;
@@ -13,6 +20,7 @@ export interface FakeStoreCard {
   category: string;
   imageUrl: string;
   description: string;
+  createdAt: string;
 }
 
 type LoadingState =
@@ -21,9 +29,16 @@ type LoadingState =
   | { status: "error"; error: Error };
 
 const FAKESTORE_URL = "https://fakestoreapi.com/products";
-const DUMMYJSON_URL = "https://dummyjson.com/products?limit=100&select=title,description,category,price,discountPercentage,rating,stock,thumbnail,sku";
+const DUMMYJSON_URL = "https://dummyjson.com/products?limit=100&select=title,description,category,price,discountPercentage,rating,stock,thumbnail,sku,meta";
 
 // ── Normalize FakeStore product ────────────────────────────────
+
+function randomDate(start: Date, end: Date): string {
+  const d = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
+  return d.toISOString();
+}
+
+const FS_DATE_RANGE = { start: new Date("2025-07-01"), end: new Date("2026-07-01") };
 
 function mapFakeStore(p: FakeStoreProduct): FakeStoreCard {
   return {
@@ -36,9 +51,14 @@ function mapFakeStore(p: FakeStoreProduct): FakeStoreCard {
     category: p.category,
     imageUrl: p.image,
     description: p.description,
+    createdAt: randomDate(FS_DATE_RANGE.start, FS_DATE_RANGE.end),
   };
 }
 
+/**
+ * Fetch a URL, validate the response shape, and map each item to a {@link FakeStoreCard}.
+ * Handles the DummyJSON `{ products: [...] }` wrapper transparently.
+ */
 async function fetchAndValidate<T>(
   url: string,
   validate: (raw: unknown) => raw is T,
@@ -80,6 +100,10 @@ function validateFakeStore(raw: unknown): raw is FakeStoreProduct {
 
 // ── Normalize DummyJSON product ────────────────────────────────
 
+interface DummyJSONMeta {
+  createdAt: string;
+}
+
 interface DummyJSONRaw {
   id: number;
   title: string;
@@ -91,6 +115,7 @@ interface DummyJSONRaw {
   stock: number;
   thumbnail: string;
   sku: string;
+  meta: DummyJSONMeta;
 }
 
 function mapDummyJSON(p: DummyJSONRaw): FakeStoreCard {
@@ -106,6 +131,7 @@ function mapDummyJSON(p: DummyJSONRaw): FakeStoreCard {
     category: p.category,
     imageUrl: p.thumbnail,
     description: p.description,
+    createdAt: p.meta?.createdAt || randomDate(FS_DATE_RANGE.start, FS_DATE_RANGE.end),
   };
 }
 
@@ -124,8 +150,19 @@ function validateDummyJSON(raw: unknown): raw is DummyJSONRaw {
   );
 }
 
-// ── Hook ───────────────────────────────────────────────────────
-
+/**
+ * Fetches product catalogs from the FakeStore and DummyJSON APIs in parallel.
+ *
+ * Uses `Promise.allSettled` so a single API failure doesn't block the other.
+ * Falls back to the built-in {@link FAKESTORE_PRODUCTS} static data if both
+ * APIs are unreachable.
+ *
+ * @returns An object with:
+ *  - `products` — the array of normalized {@link FakeStoreCard} items
+ *  - `status` — `"loading" | "settled" | "error"`
+ *  - `error` — the Error object if status is "error"
+ *  - `refetch` — a callback to re-run the fetch
+ */
 export function useFakeStoreProducts() {
   const [state, setState] = useState<LoadingState>({ status: "loading" });
 

@@ -1,3 +1,9 @@
+/**
+ * @file Global shopping cart state managed by Zustand.
+ * Tracks cart items, quantities, and the drawer open/close state.
+ * Persisted only in memory (not localStorage).
+ */
+
 "use client";
 
 import { create } from "zustand";
@@ -6,6 +12,7 @@ import { create } from "zustand";
 //  Types
 // ───────────────────────────────────────────────────────────────
 
+/** A single item in the shopping cart. */
 export interface CartItem {
   sku: string;
   name: string;
@@ -16,6 +23,7 @@ export interface CartItem {
   category: string;
 }
 
+/** Full cart state shape and action signatures. */
 export interface CartState {
   items: CartItem[];
   isOpen: boolean;
@@ -34,6 +42,14 @@ export interface CartState {
 //  Store
 // ───────────────────────────────────────────────────────────────
 
+/**
+ * Zustand store for cart state.
+ *
+ * - `addItem` increments quantity if the item already exists, otherwise adds it
+ *   with quantity 1.  Also auto-opens the cart drawer.
+ * - `updateQuantity` removes the item if the new quantity is <= 0.
+ * - `clearCart` empties all items (does not close the drawer).
+ */
 export const useCartStore = create<CartState>((set, get) => ({
   items: [],
   isOpen: false,
