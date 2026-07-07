@@ -11,48 +11,61 @@ import {
 // Explicitly use Node.js runtime (pg and prisma-adapter-pg require it)
 export const runtime = "nodejs";
 
-// Build executable schema from SDL + resolvers
-const schema = makeExecutableSchema({
-  typeDefs,
-  resolvers,
-});
+// ── Lazy initialization with error capture ─────────────────────
+// Module-level code that throws (makeExecutableSchema, createYoga)
+// would crash the entire module and produce an empty 500.
+// Instead, we lazy-init and capture any error for diagnostics.
 
-// Store the base context factory result to avoid re-initializing loaders
-const baseCtx = createContext();
+let _yoga: ReturnType<typeof createYoga> | null = null;
+let _initError: string | null = null;
 
-// Yoga server instance (created once and reused across invocations)
-const yoga = createYoga({
-  schema,
-  context: async ({ request }: { request: Request }): Promise<GraphQLContext> => {
-    return buildContext(baseCtx, request);
-  },
-  graphqlEndpoint: "/api/graphql",
-  cors: { origin: "*", credentials: true },
-  graphiql: process.env.NODE_ENV === "development",
-});
+function getYoga() {
+  if (_initError) throw new Error(_initError);
+  if (_yoga) return _yoga;
 
-// ── Next.js App Router handlers ───────────────────────────────
-
-export async function GET(request: Request) {
   try {
+    const schema = makeExecutableSchema({ typeDefs, resolvers });
+    const baseCtx = createContext();
+
+    _yoga = createYoga({
+      schema,
+      context: async ({ request }: { request: Request }): Promise<GraphQLContext> => {
+        return buildContext(baseCtx, request);
+      },
+      graphqlEndpoint: "/api/graphql",
+      cors: { origin: "*", credentials: true },
+      graphiql: process.env.NODE_ENV === "development",
+    });
+
+    return _yoga;
+  } catch (err) {
+    _initError = err instanceof Error ? err.message : String(err);
+    _initError += `\nStack: ${err instanceof Error ? err.stack : "N/A"}`;
+    throw new Error(_initError);
+  }
+}
+
+// ── Helper: handle all requests ────────────────────────────────
+
+async function handleRequest(request: Request): Promise<Response> {
+  try {
+    const yoga = getYoga();
     return await yoga.fetch(request);
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return new Response(JSON.stringify({ error: message }), {
+    const message = err instanceof Error ? err.message : String(err);
+    return new Response(JSON.stringify({ error: "GraphQL initialization failed", detail: message }), {
       status: 500,
       headers: { "content-type": "application/json" },
     });
   }
 }
 
+// ── Next.js App Router handlers ───────────────────────────────
+
+export async function GET(request: Request) {
+  return handleRequest(request);
+}
+
 export async function POST(request: Request) {
-  try {
-    return await yoga.fetch(request);
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return new Response(JSON.stringify({ error: message }), {
-      status: 500,
-      headers: { "content-type": "application/json" },
-    });
-  }
+  return handleRequest(request);
 }
