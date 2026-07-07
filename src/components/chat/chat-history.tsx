@@ -35,12 +35,7 @@ interface ChatHistoryProps {
   className?: string;
 }
 
-// ───────────────────────────────────────────────────────────────
-//  ChatHistory — Scrollable message viewport with Lenis isolation
-//  (`data-lenis-prevent`). Uses an externally provided scroll ref
-//  so the parent can orchestrate smart auto-scroll via the
-//  `useChatScroll` hook.
-// ───────────────────────────────────────────────────────────────
+
 
 export function ChatHistory({
   messages,

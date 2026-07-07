@@ -20,11 +20,7 @@ interface ChatBubbleProps {
   className?: string;
 }
 
-// ───────────────────────────────────────────────────────────────
-//  ChatBubble — renders user or assistant text with a consistent
-//  bubble style. Streaming messages get a subtle pulse indicator
-//  to signal ongoing generation.
-// ───────────────────────────────────────────────────────────────
+
 
 export function ChatBubble({
   role,
