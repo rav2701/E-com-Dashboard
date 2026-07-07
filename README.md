@@ -13,6 +13,7 @@ Welcome to **EcomDash**, a powerful, real-time analytics dashboard for managing 
 - [What Is This?](#-what-is-this)
 - [Technology Stack](#-technology-stack)
 - [Quick Start — How to Run It](#-quick-start--how-to-run-it)
+- [Deploy to Vercel](#-deploy-to-vercel)
 - [Dashboard Tour — Every Section Explained](#-dashboard-tour--every-section-explained)
 - [What Data Does It Show?](#-what-data-does-it-show)
 - [Project File Structure](#-project-file-structure)
@@ -95,6 +96,116 @@ npm run dev
 ```
 
 Then open **http://localhost:3000** in your browser.
+
+---
+
+## ▲ Deploy to Vercel
+
+Deploy this dashboard to Vercel for a live, production-ready URL. Follow these steps:
+
+### 1. Push Your Code to GitHub
+
+```bash
+git init
+git add .
+git commit -m "Initial commit"
+# Create a repo on GitHub, then:
+git remote add origin https://github.com/YOUR_USERNAME/ecom-dashboard.git
+git push -u origin main
+```
+
+### 2. Set Up a Cloud PostgreSQL Database
+
+The project requires PostgreSQL. Since Docker won't run on Vercel, use a cloud provider:
+
+| Provider | Free Tier | How to Set Up |
+|----------|-----------|---------------|
+| **[Vercel Postgres](https://vercel.com/docs/storage/vercel-postgres)** | 256 MB | Dashboard → **Storage** → **Create Database** → **Postgres** — Vercel auto-injects env vars |
+| **[Neon](https://neon.tech)** | 500 MB | Create project → copy `postgresql://...` connection string |
+| **[Supabase](https://supabase.com)** | 500 MB | New project → **Settings** → **Database** → Connection string |
+
+> **Tip:** Vercel Postgres is the simplest — it automatically adds `DATABASE_URL` to your project's environment variables when you connect it.
+
+### 3. Configure for Production Build
+
+The project already includes:
+- **`vercel.json`** — with `{ "buildCommand": "next build" }`
+- **`package.json`** — with `"postinstall": "prisma generate"` (runs automatically on Vercel to generate the Prisma Client)
+
+### 4. Deploy to Vercel
+
+**Option A — Vercel Dashboard (easiest):**
+
+1. Go to [vercel.com/new](https://vercel.com/new)
+2. Import your GitHub repository
+3. Vercel auto-detects Next.js — keep default settings
+4. Add the environment variables below, then click **Deploy**
+
+**Option B — Vercel CLI:**
+
+```bash
+npm i -g vercel
+vercel login
+vercel --prod
+```
+
+### 5. Add Environment Variables
+
+In your Vercel project dashboard → **Settings** → **Environment Variables**, add:
+
+| Variable | Value | Required |
+|----------|-------|----------|
+| `DATABASE_URL` | Your PostgreSQL connection string from Step 2 | ✅ Yes |
+| `JWT_SECRET` | A random 64-character hex string (generate below) | ✅ Yes |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | Your Gemini API key from [aistudio.google.com](https://aistudio.google.com) | ❌ Optional |
+
+**Generate a JWT_SECRET:**
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+Make sure to set these for **all environments** (Production, Preview, Development).
+
+### 6. Run Database Migrations
+
+After the first deploy succeeds:
+
+1. Go to Vercel dashboard → your project → **Storage** → **Postgres** → check the connection
+2. Run migrations from your local machine (connected to the cloud DB):
+   ```bash
+   npx prisma migrate deploy
+   npm run db:seed
+   ```
+3. Or run them via Vercel CLI:
+   ```bash
+   vercel env pull .env.production.local
+   npx prisma migrate deploy
+   ```
+
+### 7. Verify Your Deployment
+
+| Page | What to Check |
+|------|---------------|
+| `/` | Dashboard loads with KPI cards, charts, and product viewer |
+| `/products` | Product catalog loads from FakeStore + DummyJSON APIs (no DB needed) |
+| `/reports` | 6 chart types render with date filtering and export |
+| `/chat` | AI Chat works (if Gemini key is set) or shows offline badge |
+| `/api/status` | Health check returns `{ "status": "ok" }` |
+
+### What Works vs What Doesn't
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| **Dashboard** | ✅ Works | PostgreSQL data via Prisma |
+| **Products Page** | ✅ Works | Fetches from FakeStore/DummyJSON directly |
+| **Reports Page** | ✅ Works | Client-side data processing + Recharts |
+| **CSV / PDF Export** | ✅ Works | Fully client-side, no backend needed |
+| **Auth (Login/Register)** | ✅ Works | JWT stored in the cloud DB |
+| **AI Chat** | ⚠️ Requires Gemini key | Falls back to offline mode without it |
+| **Docker** | ❌ Not needed | Local development only |
+
+> **Tip:** Each time you push to the `main` branch, Vercel automatically rebuilds and redeploys. Preview deployments are created automatically for pull requests.
 
 ---
 
