@@ -16,7 +16,8 @@ export const runtime = "nodejs";
 // would crash the entire module and produce an empty 500.
 // Instead, we lazy-init and capture any error for diagnostics.
 
-let _yoga: { fetch(request: Request, ...args: any[]): Promise<Response> } | null = null;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let _yoga: any = null;
 let _initError: string | null = null;
 
 function getYoga() {
