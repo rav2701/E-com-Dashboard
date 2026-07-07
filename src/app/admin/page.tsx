@@ -12,6 +12,7 @@ import {
   Database,
   Loader2,
   AlertTriangle,
+  ArrowLeft,
 } from "lucide-react";
 
 // ───────────────────────────────────────────────────────────────
@@ -136,6 +137,19 @@ export default function AdminPage() {
           </span>
         </div>
       </div>
+
+      {/* Back to Dashboard */}
+      <button
+        onClick={() => router.push("/")}
+        className={cn(
+          "group inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-medium transition-all duration-200",
+          "text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900",
+          "dark:text-zinc-400 dark:hover:bg-zinc-800/50 dark:hover:text-zinc-100"
+        )}
+      >
+        <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
+        Back to Dashboard
+      </button>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
