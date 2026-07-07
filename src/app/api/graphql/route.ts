@@ -3,16 +3,14 @@ import { createYoga } from "graphql-yoga";
 export const runtime = "nodejs";
 
 const yoga = createYoga({
-  schema: {
-    typeDefs: /* GraphQL */ `
-      type Query {
-        hello: String
-      }
-    `,
-    resolvers: {
-      Query: {
-        hello: () => "world",
-      },
+  typeDefs: /* GraphQL */ `
+    type Query {
+      hello: String
+    }
+  `,
+  resolvers: {
+    Query: {
+      hello: () => "world",
     },
   },
   graphqlEndpoint: "/api/graphql",
