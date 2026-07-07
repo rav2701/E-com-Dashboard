@@ -8,6 +8,9 @@ import {
   type GraphQLContext,
 } from "@/graphql/context";
 
+// Explicitly use Node.js runtime (pg and prisma-adapter-pg require it)
+export const runtime = "nodejs";
+
 // Build executable schema from SDL + resolvers
 const schema = makeExecutableSchema({
   typeDefs,
@@ -31,9 +34,25 @@ const yoga = createYoga({
 // ── Next.js App Router handlers ───────────────────────────────
 
 export async function GET(request: Request) {
-  return yoga.fetch(request);
+  try {
+    return await yoga.fetch(request);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return new Response(JSON.stringify({ error: message }), {
+      status: 500,
+      headers: { "content-type": "application/json" },
+    });
+  }
 }
 
 export async function POST(request: Request) {
-  return yoga.fetch(request);
+  try {
+    return await yoga.fetch(request);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return new Response(JSON.stringify({ error: message }), {
+      status: 500,
+      headers: { "content-type": "application/json" },
+    });
+  }
 }
