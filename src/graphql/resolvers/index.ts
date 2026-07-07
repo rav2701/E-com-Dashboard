@@ -1,6 +1,7 @@
 import { getDashboardKPIs } from "./dashboard";
 import { getSalesTimeline } from "./timeline";
 import { getTopProducts } from "./products";
+import { getAllProducts, getAllCategories } from "./catalog";
 import {
   getRecentOrders,
   getTrafficSources,
@@ -21,6 +22,8 @@ export const resolvers = {
     getDeviceBreakdown,
     getAlerts,
     getCategoryPerformance,
+    getAllProducts,
+    getAllCategories,
     me,
   },
 

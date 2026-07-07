@@ -5,6 +5,8 @@ import { type ReactNode } from "react";
 import { Sidebar } from "./sidebar";
 import { MainContent } from "./main-content";
 import { LenisProvider } from "@/components/providers/lenis-provider";
+import { CartTrigger } from "@/components/cart/cart-trigger";
+import { CartDrawer } from "@/components/cart/cart-drawer";
 
 const authRoutes = ["/login", "/register", "/forgot-password"];
 
@@ -24,6 +26,8 @@ export function AppShell({ children }: AppShellProps) {
     <LenisProvider>
       <Sidebar />
       <MainContent>{children}</MainContent>
+      <CartTrigger />
+      <CartDrawer />
     </LenisProvider>
   );
 }

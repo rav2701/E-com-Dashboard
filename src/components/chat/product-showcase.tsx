@@ -91,21 +91,113 @@ const categoryIcons: Record<string, string> = {
   Outdoors: "⛺",
 };
 
-const productPlaceholders = [
-  "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop",
-  "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=400&fit=crop",
-  "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&h=400&fit=crop",
-  "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&h=400&fit=crop",
-  "https://images.unsplash.com/photo-1486401899868-0e435ed85128?w=400&h=400&fit=crop",
-  "https://images.unsplash.com/photo-1560343090-f0409e92791a?w=400&h=400&fit=crop",
-  "https://images.unsplash.com/photo-1444881421460-d838c3b98f95?w=400&h=400&fit=crop",
-  "https://images.unsplash.com/photo-1491553895911-0055eca6402d?w=400&h=400&fit=crop",
-];
+/**
+ * Curated mapping of product keywords to specific Unsplash photo URLs.
+ * Each URL is a real product photo that visually matches the product type.
+ */
+const PRODUCT_IMAGE_MAP: Record<string, string> = {
+  // Audio
+  headphones: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&h=400&fit=crop",
+  earbuds: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=400&h=400&fit=crop",
+  speaker: "https://images.unsplash.com/photo-1608248543803-ba4f8c70a0b7?w=400&h=400&fit=crop",
 
-function enrichProduct(p: ProductItem, index: number): ProductItem {
+  // Wearables
+  watch: "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=400&h=400&fit=crop",
+  smartwatch: "https://images.unsplash.com/photo-1546868871-af0de0ae72c9?w=400&h=400&fit=crop",
+  wearable: "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=400&h=400&fit=crop",
+  fitness: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=400&fit=crop",
+  tracker: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=400&fit=crop",
+
+  // Computer / Tech
+  keyboard: "https://images.unsplash.com/photo-1595225476474-87563907a212?w=400&h=400&fit=crop",
+  monitor: "https://images.unsplash.com/photo-1527443154391-507e9b6c0032?w=400&h=400&fit=crop",
+  mouse: "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=400&h=400&fit=crop",
+  "usb-c": "https://images.unsplash.com/photo-1591522810844-48695034177b?w=400&h=400&fit=crop",
+  "usb hub": "https://images.unsplash.com/photo-1591522810844-48695034177b?w=400&h=400&fit=crop",
+  charger: "https://images.unsplash.com/photo-1616036740257-9429b6344515?w=400&h=400&fit=crop",
+  "laptop stand": "https://images.unsplash.com/photo-1527814050087-3793f7574b66?w=400&h=400&fit=crop",
+  "standing desk": "https://images.unsplash.com/photo-1593784991095-a205069470b6?w=400&h=400&fit=crop",
+  "smart plug": "https://images.unsplash.com/photo-1558089687-f282ffcbc126?w=400&h=400&fit=crop",
+  desk: "https://images.unsplash.com/photo-1593784991095-a205069470b6?w=400&h=400&fit=crop",
+  "laptop": "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=400&fit=crop",
+
+  // Bags & Accessories
+  bag: "https://images.unsplash.com/photo-1547949003-9792a18a2601?w=400&h=400&fit=crop",
+  backpack: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=400&h=400&fit=crop",
+  wallet: "https://images.unsplash.com/photo-1627123424574-724758594e93?w=400&h=400&fit=crop",
+  sunglasses: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&h=400&fit=crop",
+  scarf: "https://images.unsplash.com/photo-1601924994987-69e26d50dc26?w=400&h=400&fit=crop",
+  "crossbody": "https://images.unsplash.com/photo-1547949003-9792a18a2601?w=400&h=400&fit=crop",
+
+  // Home & Kitchen
+  coffee: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&h=400&fit=crop",
+  "french press": "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&h=400&fit=crop",
+  espresso: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=400&h=400&fit=crop",
+  kitchen: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=400&fit=crop",
+  "cutting board": "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=400&h=400&fit=crop",
+  "dutch oven": "https://images.unsplash.com/photo-1590794056226-79ef3a8147e1?w=400&h=400&fit=crop",
+  "wine opener": "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?w=400&h=400&fit=crop",
+  candle: "https://images.unsplash.com/photo-1603006905003-be475563bc59?w=400&h=400&fit=crop",
+  "throw blanket": "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&h=400&fit=crop",
+  blanket: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&h=400&fit=crop",
+  pillowcase: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&h=400&fit=crop",
+  "fire pit": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=400&fit=crop",
+  decor: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=400&h=400&fit=crop",
+
+  // Outdoors & Sports
+  tent: "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=400&h=400&fit=crop",
+  camping: "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=400&h=400&fit=crop",
+  "water bottle": "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=400&h=400&fit=crop",
+  "beach towel": "https://images.unsplash.com/photo-1564419320411-3b26c75ad8a8?w=400&h=400&fit=crop",
+  towel: "https://images.unsplash.com/photo-1564419320411-3b26c75ad8a8?w=400&h=400&fit=crop",
+  "yoga mat": "https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?w=400&h=400&fit=crop",
+  yoga: "https://images.unsplash.com/photo-1599901860904-17e6ed7083a0?w=400&h=400&fit=crop",
+  dumbbell: "https://images.unsplash.com/photo-1583454110551-21f2fa2afe58?w=400&h=400&fit=crop",
+  "resistance band": "https://images.unsplash.com/photo-1598289431512-b97b0917affc?w=400&h=400&fit=crop",
+  "rowing machine": "https://images.unsplash.com/photo-1534258936925-c58bed479fcb?w=400&h=400&fit=crop",
+  "bike mount": "https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=400&h=400&fit=crop",
+
+  // Fashion
+  "leather": "https://images.unsplash.com/photo-1547949003-9792a18a2601?w=400&h=400&fit=crop",
+  briefcase: "https://images.unsplash.com/photo-1547949003-9792a18a2601?w=400&h=400&fit=crop",
+  "tote bag": "https://images.unsplash.com/photo-1547949003-9792a18a2601?w=400&h=400&fit=crop",
+  tote: "https://images.unsplash.com/photo-1547949003-9792a18a2601?w=400&h=400&fit=crop",
+
+  // Defaults by category
+  electronics: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400&h=400&fit=crop",
+  accessories: "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&h=400&fit=crop",
+  fashion: "https://images.unsplash.com/photo-1547949003-9792a18a2601?w=400&h=400&fit=crop",
+  outdoors: "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=400&h=400&fit=crop",
+};
+
+/**
+ * Matches a product name against the keyword map to find a relevant
+ * Unsplash product photo. Falls back to a generic electronics image.
+ */
+function getProductImageUrl(product: ProductItem): string {
+  const name = product.name.toLowerCase();
+  const category = (product.category || "").toLowerCase();
+
+  // Try exact keyword matches from the name
+  for (const [keyword, url] of Object.entries(PRODUCT_IMAGE_MAP)) {
+    if (name.includes(keyword) || category.includes(keyword)) {
+      return url;
+    }
+  }
+
+  // Fallback by category
+  if (PRODUCT_IMAGE_MAP[category]) {
+    return PRODUCT_IMAGE_MAP[category];
+  }
+
+  // Ultimate fallback
+  return PRODUCT_IMAGE_MAP.electronics;
+}
+
+function enrichProduct(p: ProductItem): ProductItem {
   return {
     ...p,
-    imageUrl: p.imageUrl || productPlaceholders[index % productPlaceholders.length],
+    imageUrl: p.imageUrl || getProductImageUrl(p),
     stockStatus: p.stockStatus ?? (p.stockLevel > 20 ? "in_stock" : p.stockLevel > 5 ? "low_stock" : "out_of_stock"),
     conversionPercentage: p.conversionPercentage ?? Math.round((p.unitsSold / Math.max(p.unitsSold + p.stockLevel, 1)) * 50 + 12 + Math.random() * 20),
   };
@@ -328,7 +420,7 @@ interface ProductShowcaseProps {
 
 export function ProductShowcase({ data }: ProductShowcaseProps) {
   const { query, total, products, summary } = data;
-  const top3 = products.slice(0, 3).map((p, i) => enrichProduct(p, i));
+  const top3 = products.slice(0, 3).map((p) => enrichProduct(p));
   const hero = top3[0];
   const sideProducts = top3.slice(1);
 
